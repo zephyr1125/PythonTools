@@ -1,42 +1,30 @@
 import os
+from tkinter import *
+from tkinter import ttk
+from tkinter import filedialog
 
-examplePath = 'Example'
-listAllFile = []
-listMeta = []
-listGUID = []
-listTimes = []
+#需求
+#检查指定文件夹下(包括子文件夹)所有文件的GUID
+#统计在目标文件夹内的引用次数，从少到多排序
+#结束显示里要包括受检查的文件名、引用次数、引用了的文件名
 
-#find all meta files for files, which means except folder's meta
-for folderName, subFolders, fileNames in os.walk(examplePath):
-	for fileName in fileNames:
-		wholePath = os.path.join(folderName, fileName)
-		listAllFile.append(wholePath)
-		if os.path.isfile(wholePath) and not fileName.endswith('.meta')
-			listMeta.append(wholePath+'.meta')
-
-#get all GUIDs in meta files
-for filePath in listMeta:
-	readLines = open(filePath).readlines()
-	for line in readLines:
-		if line.startswith('guid: '):
-			listGUID.append(line.lstrip('guid: ').rstrip('\n'))
-
-print(listGUID)
-
-#record GUID times in all prefabs
-for filePath in listAllFile:
-	if filePath.endswith('prefab'):
-		print(filePath)
-		readAll = open(filePath).read()
-		for i, guid in enumerate(listGUID):
-			if guid in readAll:
-				print('find :' + guid)
-				if len(listTimes)>i:
-					listTimes[i] += 1
-				else:
-					listTimes.insert(i, 1)
+#UI
 
 
-#show all file's referenced times
-for i, file in enumerate(listMeta):
-	print(file + ": " + str(listTimes[i]))
+def ChooseFolder():
+    dirPath.set(filedialog.askdirectory())
+
+#选择来源文件夹与目标文件夹
+root  = Tk()
+root.title("检查GUID")
+
+mainframe = ttk.Frame(root, padding="3 3 12 12")
+mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
+mainframe.columnconfigure(0, weight=1)
+mainframe.rowconfigure(0, weight=1)
+
+dirPath = StringVar()
+ttk.Button(mainframe, text="选择源文件夹", command=ChooseFolder).grid(column=1, row=1, sticky=W)
+ttk.Label(mainframe, textvariable=dirPath).grid(column=2, row=1, sticky=E)
+
+root.mainloop()
