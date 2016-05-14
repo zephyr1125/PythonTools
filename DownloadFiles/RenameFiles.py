@@ -1,8 +1,6 @@
 
 # coding=utf-8
 
-# 潘洁：英语导致找不到“期望从事职业”
-
 import os
 import shutil
 import codecs
@@ -10,9 +8,6 @@ import re
 from bs4 import BeautifulSoup
 
 rawFolder = "D:\\my\\python\\PythonTools\\DownloadFiles\\raw\\"
-publishFolder = "D:\\my\\python\\PythonTools\\DownloadFiles\\publish\\"
-
-targetJobs = ["iOS", "Java", "UI", "产品经理", "PHP"]
 
 def GetName(soup):
     name = "未知"
@@ -41,20 +36,6 @@ def GetCompany(soup):
         companyName = companyNode.find_next("td").string
         
     return companyName
-    
-def FindKeyWord(soup):
-    #使用全文搜索，只要找到关键字返回
-    #因此无需判断不同的招聘网站
-    for target in targetJobs:
-        found = soup.find_all(text=re.compile(target, re.IGNORECASE))
-        if(found):
-            return target
-    return "其他"
-    
-    # for targetJob in targetJobs:
-    #     if(soup.find(string=Find(targetJob,string)) != None):
-    #         return targetJob
-    # return "None"
 
 for folderName, subfolders, filenames in os.walk(rawFolder):
     for filename in filenames:
@@ -76,9 +57,5 @@ for folderName, subfolders, filenames in os.walk(rawFolder):
             newFileName = newFileName.strip().replace("/",".")
             newFileName = newFileName.strip().replace("*",".")
             shutil.move(fullPath, folderName+'\\'+newFileName)
-            
-            #转移文件夹
-            keyWord = FindKeyWord(soup)
-            shutil.move(fullPath, publishFolder+keyWord+'\\'+newFileName)
 
 

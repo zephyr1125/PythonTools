@@ -13,6 +13,12 @@ import urllib.request
 import http.cookiejar  
 import string  
 import re  
+import os
+
+start = 809160
+end = 900000
+
+p = start
 
 def Login():  
     #登录的主页面  
@@ -52,29 +58,25 @@ def Login():
     print("snatch successfully.")  
 
 def Get(startP):
+    global p
     try:
         for i in range(startP, end):
             #每一定次数就重登陆一次
             if i%4000==0:
                 Login()        
             file = urllib.request.urlopen("http://114.215.88.35:5678/rest/file/download/CV"+str(i))  
-            htmlFile = file.read()  
-            htmlPath="D:\\my\\python\\PythonTools\\DownloadFiles\\files\\CV"+str(i)+".html"
-
+            htmlFile = file.read() 
+            folderPath = "D:\\my\\python\\PythonTools\\DownloadFiles\\files\\"+str(int(i/1000))
+            htmlPath = folderPath+"\\CV"+str(i)+".html"
+            if not os.path.exists(folderPath):
+                os.makedirs(folderPath)
             f_obj = open(htmlPath,'wb')  
             f_obj.write(htmlFile)
             p=i
             print("snatch successfully.")  
     except Exception as what: 
         print(what)
-        return get(p)
-
-
-start = 805143
-end = 900000
-
-p = start
-
+        return Get(p)
 
 Login()
 Get(p)
