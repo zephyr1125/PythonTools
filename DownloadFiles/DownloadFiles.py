@@ -70,7 +70,7 @@ def Get(startP):
         return get(p)
 
 
-start = 800001
+start = 805143
 end = 900000
 
 p = start
