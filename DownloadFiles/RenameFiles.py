@@ -5,10 +5,12 @@ import os
 import shutil
 import codecs
 import re
+import random
 from bs4 import BeautifulSoup
 
-folderNo = input("编号")
-rawFolder = "D:\\my\\python\\PythonTools\\DownloadFiles\\files\\"+folderNo
+folderStart = input("起始")
+folderEnd = input("结束")
+rawFolder = "D:\\my\\python\\PythonTools\\DownloadFiles\\files\\"
 publishFolder = "D:\\my\\python\\PythonTools\\DownloadFiles\\publish\\"
 
 targetJobs = ["iOS", "Java", "UI", "产品经理", "PHP"]
@@ -70,39 +72,60 @@ def FindKeyWord(soup):
     #使用全文搜索，只要找到关键字返回
     #因此无需判断不同的招聘网站
     for target in targetJobs:
-        found = soup.find_all(text=re.compile(target, re.IGNORECASE))
+        found = False
+        if target == "UI":
+            #对UI要匹配大小写且前后不能有英文，出现超过1次
+            result = soup.find_all(text=re.compile("([^a-zA-Z]|^)UI([^a-zA-Z]|$)"))
+            found = len(result)>1
+        elif target == "iOS":
+            #对iOS要前后不能有英文，出现超过1次
+            result = soup.find_all(text=re.compile("([^a-zA-Z]|^)iOS([^a-zA-Z]|$)", re.IGNORECASE))
+            found = len(result)>1
+        elif target == "PHP" or target == "Java":
+            #出现超过1次
+            result = soup.find_all(text=re.compile(target, re.IGNORECASE))
+            found = len(result)>1
+        else:
+            found = soup.find_all(text=re.compile(target, re.IGNORECASE))
         if(found):
             return target
     return "其他"
 
-for folderName, subfolders, filenames in os.walk(rawFolder):
-    for filename in filenames:
-        fullPath = folderName+'\\'+filename
-        # if(filename.startswith("CV")):
-        if(True):
-            try:
-                soup = BeautifulSoup(open(fullPath, encoding='utf-8'), "html.parser", from_encoding="utf-8")
-                #名字
-                name = GetName(soup).strip()
+for folder in range(int(folderStart), int(folderEnd)+1):
+    print("start "+str(folder))
+    for folderName, subfolders, filenames in os.walk(rawFolder+str(folder)):
+        for filename in filenames:
+            fullPath = folderName+'\\'+filename
+            # if(filename.startswith("CV")):
+            if(True):
+                try:
+                    soup = BeautifulSoup(open(fullPath, encoding='utf-8'), "html.parser", from_encoding="utf-8")
+                    #名字
+                    name = GetName(soup).strip()
+                        
+                    #职业
+                    jobName = GetJob(soup).strip()
                     
-                #职业
-                jobName = GetJob(soup).strip()
-                
-                #公司
-                companyName = GetCompany(soup).strip()
-                
-                #改名
-                newFileName = name+"_"+jobName+"_"+companyName+".html"
-                newFileName = newFileName.strip().replace("/",".")
-                newFileName = newFileName.strip().replace("\\",".")
-                newFileName = newFileName.strip().replace("*",".")
-                shutil.move(fullPath, folderName+'\\'+newFileName)
-                
-                #转移文件夹
-                keyWord = FindKeyWord(soup)
-                shutil.move(fullPath, publishFolder+keyWord+'\\'+filename)
-                
-            except Exception as e:
-                print(e)
+                    #公司
+                    companyName = GetCompany(soup).strip()
+                    
+                    #改名
+                    newFileName = name+"_"+jobName+"_"+companyName
+                    newFileName = newFileName.strip().replace("/",".")
+                    newFileName = newFileName.strip().replace("\\",".")
+                    newFileName = newFileName.strip().replace("*",".")
+                    
+                    #转移文件夹
+                    if not ("未知" in newFileName):
+                        keyWord = FindKeyWord(soup)
+                        targetPath = publishFolder+keyWord+'\\'+newFileName+".html"
+                        if(os.path.exists(targetPath)):
+                            newFileName+=re.search("[0-9]{6}", filename).group(0)
+                            targetPath = publishFolder+keyWord+'\\'+newFileName+".html"
+                        print("move: "+newFileName)
+                        shutil.move(fullPath, targetPath)
+                    
+                except Exception as e:
+                    print(e)
 
 
